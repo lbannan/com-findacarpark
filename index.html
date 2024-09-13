@@ -1,0 +1,353 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+  <title>Cartography and Visualisation: Assignment 2</title>
+  <meta charset='utf-8' />
+  <script src='https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js'></script>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css' rel='stylesheet' />
+
+  <!--Link to stylesheet-->
+
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script
+    src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.1-dev/mapbox-gl-geocoder.min.js"></script>
+  <link rel="stylesheet"
+    href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.1-dev/mapbox-gl-geocoder.css"
+    type="text/css" />
+
+</head>
+
+<body>
+  <!--Containers-->
+  <!--Map-->
+  <div id="map"></div>
+
+  <!--Title and Subtitle-->
+  <div class='map-overlay' id='title'>
+    <h4>City of Melbourne: Off-street car parking</h4>
+    <div id='info'>
+      <p>Use the search function to find the closest commercial car park to your next destination.
+        <br><br>Not sure where to go? Check out <a
+          href="https://whatson.melbourne.vic.gov.au/things-to-do/attractions-and-sights" target="_blank">the City of Melbourne
+          website</a> for
+        some inspiration.
+      </p>
+    </div>
+  </div>
+
+  <!--Geocoder container-->
+  <div id="geocoder-container"></div>
+
+  <!--Button container-->
+  <div id="button-container">
+    <button id="clear-geocoder">Clear Selection</button>
+  </div>
+
+  <!--Legend container-->
+
+  <div class="legend">
+    <div class="legend-title">Capacity</div>
+    <div class="legend-content">
+      <div class="legend-icons">
+        <div class="legend-icon" data-icon-size="small" style="background-color: #0d3654;"></div>
+        <div class="legend-icon" data-icon-size="medium" style="background-color: #25628e;"></div>
+        <div class="legend-icon" data-icon-size="large" style="background-color: #5181a5;"></div>
+      </div>
+      <div class="legend-text">
+        <div class="legend-item">
+          < 500</div>
+            <div class="legend-item">
+              < 1500</div>
+                <div class="legend-item">
+                  < 3000</div>
+                </div>
+            </div>
+        </div>
+
+      </div>
+
+      <script>
+        // Set bounds to Melbourne
+        var bounds = [
+          [144.8963653, -37.8523627], //Bottom left corner
+          [145.0027316, -37.7713592] //Top right corner
+        ];
+
+        mapboxgl.accessToken = 'pk.eyJ1IjoibGUtYW5uZWIiLCJhIjoiY2x0b3Z2MGw1MDNwMjJqcW83ZHBpazFsbCJ9.rWY7rIin8XSlntBnCyV8Vw'; // Mapbox style access token
+
+        const map = new mapboxgl.Map({
+          container: 'map', // Container ID
+          style: 'mapbox://styles/le-anneb/clwzwkh1i01i301q18jti97z3', // Mapbox map style to use
+          center: [144.96, -37.81], // Starting position [lng, lat]
+          zoom: 13, // Starting zoom level
+          maxBounds: bounds,
+          attributionControl: false // Remove default attribution
+        });
+
+        // Custom attribution
+        map.addControl(new mapboxgl.AttributionControl({
+          customAttribution: 'Design: Le-Anne Bannan | Data: City of Melbourne, 2024'
+        }));
+
+        map.on('load', () => {
+
+          // Upload images to use as custom symbols
+          map.loadImage(
+            'https://raw.githubusercontent.com/lbannan/parking-map/main/parking_logo_small.png',
+            (error, image) => {
+              if (error) throw error;
+              map.addImage('parking_logo_small', image);
+            }
+          );
+
+          map.loadImage(
+            'https://raw.githubusercontent.com/lbannan/parking-map/main/parking_logo_medium.png',
+            (error, image) => {
+              if (error) throw error;
+              map.addImage('parking_logo_medium', image);
+            }
+          );
+
+          map.loadImage(
+            'https://raw.githubusercontent.com/lbannan/parking-map/main/parking_logo_large.png',
+            (error, image) => {
+              if (error) throw error;
+              map.addImage('parking_logo_large', image);
+            }
+          );
+
+          map.loadImage(
+            'https://raw.githubusercontent.com/lbannan/parking-map/main/search_results_small.png',
+            (error, image) => {
+              if (error) throw error;
+              map.addImage('search_results_small', image);
+            }
+          );
+
+          map.loadImage(
+            'https://raw.githubusercontent.com/lbannan/parking-map/main/search_results_medium.png',
+            (error, image) => {
+              if (error) throw error;
+              map.addImage('search_results_medium', image);
+            }
+          );
+
+          map.loadImage(
+            'https://raw.githubusercontent.com/lbannan/parking-map/main/search_results_large.png',
+            (error, image) => {
+              if (error) throw error;
+              map.addImage('search_results_large', image);
+            }
+          );
+
+
+          //Add default layer displaying all car parks
+          map.addLayer({
+            'id': 'all_carparks',
+            'type': 'symbol',
+            'source': {
+              type: 'vector',
+              url: 'mapbox://le-anneb.a4sfk7gn'
+            },
+            'source-layer': 'commercial_carparks22-0j3vha',
+            'layout': {
+              'visibility': 'visible',
+              'icon-image': [ //Icons images to display
+                'case',
+                ['<', ['get', 'USER_Parking_spaces'], 500], 'parking_logo_small', // Smallest size
+                ['<', ['get', 'USER_Parking_spaces'], 1500], 'parking_logo_medium', // Medium size
+                'parking_logo_large' // Large size
+              ],
+              'icon-size': [ //Size of icons displayed
+                'case',
+                ['<', ['get', 'USER_Parking_spaces'], 500], 0.25, // Smallest size
+                ['<', ['get', 'USER_Parking_spaces'], 1500], 0.29, // Medium size
+                0.34 // Large size
+              ],
+              'icon-size-transition': {
+                duration: 0
+              }
+            }
+          });
+
+          // Initialize a single popup instance for all_carparks
+          const popup = new mapboxgl.Popup({
+            closeButton: false,
+            closeOnClick: false
+          });
+
+          // Event listener for 'all_carparks' layer
+          map.on('mouseenter', 'all_carparks', function (e) {
+            map.getCanvas().style.cursor = 'pointer';
+
+            const properties = e.features[0].properties;
+            const coordinates = e.lngLat;
+
+            //Text to display in pop up
+            const content = `
+    <p><b>Address: </b> ${properties.Place_addr}</p>    
+    <p><b>Car spaces: </b>${properties.USER_Parking_spaces}</p>
+  `;
+
+            // Set the popup content and show it
+            popup.setLngLat(coordinates)
+              .setHTML(content)
+              .addTo(map);
+          });
+
+          map.on('mouseleave', 'all_carparks', function () {
+            map.getCanvas().style.cursor = '';
+            popup.remove(); // Remove the popup when leaving the layer
+          });
+
+
+          // Add geocoder for search function and buffer
+          const geocoder = new MapboxGeocoder({
+            // Initialize the geocoder
+            accessToken: mapboxgl.accessToken, // Set the access token
+            mapboxgl: mapboxgl, // Set the mapbox-gl instance
+            zoom: 15, // Set the zoom level for geocoding results
+            placeholder: 'Enter an address or place name', // Text to display in the search bar
+          });
+
+          // Add geocoder to map by appending to container
+          //https://docs.mapbox.com/help/tutorials/tilequery-healthy-food-finder/#getting-started
+          document.getElementById('geocoder-container').appendChild(geocoder.onAdd(map));
+
+          const marker = new mapboxgl.Marker();
+
+          geocoder.on('result', async (event) => {
+            // When the geocoder returns a result
+            const point = event.result.center; // Capture the result coordinates
+
+            // Check if the selected point is within the bounds
+            if (!map.getBounds().contains(point)) {
+              // Show an alert if outside the bounds
+              alert('Sorry, this map is currently only able to be used in the City of Melbourne.');
+
+              // Clear the geocoder input
+              geocoder.clear();
+
+              // Reset map center to starting position
+              map.flyTo({
+                center: [144.96, -37.81],
+                zoom: 13,
+                essential: true // Ensure animation executes regardless of users prefers-reduced-motion
+              });
+              return;
+            }
+
+            const tileset = 'le-anneb.a4sfk7gn'; // Tileset ID for carpark layer
+            const radius = 900; // Set network search buffer to 900 meters (10 minute walk, 30 minutes by wheelchair)
+            const limit = 20; // The maximum amount of results to return
+
+            marker.setLngLat(point).addTo(map); // Add the marker to the map at the result coordinates
+
+            const query = await fetch(
+              `https://api.mapbox.com/v4/${tileset}/tilequery/${point[0]},${point[1]}.json?radius=${radius}&limit=${limit}&access_token=${mapboxgl.accessToken}`,
+              { method: 'GET' }
+            );
+
+            const json = await query.json();
+
+            // Use the response to populate the 'tilequery' source
+            map.getSource('tilequery').setData(json);
+          });
+
+          map.addSource('tilequery', {
+            // Add a new source to the map style: https://docs.mapbox.com/mapbox-gl-js/api/#map#addsource
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: []
+            }
+          });
+
+          //Add results of tilequery as a new layer and set display preferences to match default layer 
+          map.addLayer({
+            id: 'tilequery-points',
+            type: 'symbol',
+            source: 'tilequery',
+            layout: {
+              'icon-image': [
+                'case',
+                ['<', ['get', 'USER_Parking_spaces'], 500], 'search_results_small',
+                ['<', ['get', 'USER_Parking_spaces'], 1500], 'search_results_medium',
+                'search_results_large'
+              ],
+              'icon-size': [
+                'case',
+                ['<', ['get', 'USER_Parking_spaces'], 500], 0.25,
+                ['<', ['get', 'USER_Parking_spaces'], 1500], 0.29,
+                0.34
+              ],
+              'icon-size-transition': {
+                duration: 0
+              }
+            }
+          });
+
+          // Event listener for 'tilequery-points' layer
+          map.on('mouseenter', 'tilequery-points', function (e) {
+            map.getCanvas().style.cursor = 'pointer';
+
+            const properties = e.features[0].properties;
+            const obj = JSON.parse(properties.tilequery);
+            const coordinates = e.lngLat;
+
+            //Calculate estimated travel time based on https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3403062/
+            const walkingTimeMinutes = (obj.distance / 90).toFixed(0);
+            const wheelchairTimeMinutes = (obj.distance / 30).toFixed(0);
+
+            //Text to display in pop up
+            const content = `
+
+    <p><b>Address: </b> ${properties.Place_addr}</p>    
+    <p><b>Car spaces: </b>${properties.USER_Parking_spaces}</p>
+    <p><b>Estimated travel time: </b>${walkingTimeMinutes} minute(s) on foot or ${wheelchairTimeMinutes} minute(s) using a wheelchair</p>
+  `;
+
+            // Set the popup content and show it
+            popup.setLngLat(coordinates)
+              .setHTML(content)
+              .addTo(map);
+          });
+
+          map.on('mouseleave', 'tilequery-points', function () {
+            map.getCanvas().style.cursor = '';
+            popup.remove(); // Remove the popup when leaving the layer
+          });
+
+          // Create 'Clear selection' button
+          const clearButton = document.createElement('button');
+          clearButton.id = 'clear-geocoder';
+          clearButton.textContent = 'Clear selection';
+          clearButton.className = 'active';
+
+          document.getElementById('clear-geocoder').addEventListener('click', () => {
+            marker.remove();
+            map.getSource('tilequery').setData({
+              type: 'FeatureCollection',
+              features: []
+            });
+            geocoder.clear();
+            // Reset map center to starting position after 'Clear selection' event
+            map.flyTo({
+              center: [144.96, -37.81],
+              zoom: 13,
+              essential: true // // Ensure animation executes regardless of users prefers-reduced-motion
+            });
+          });
+
+          // Add pan and zoom features
+          map.addControl(new mapboxgl.NavigationControl());
+
+          // Add scale bar
+          var scale = new mapboxgl.ScaleControl();
+          map.addControl(scale, 'bottom-left');
+        });
+      </script>
+</body>
+
+</html>
