@@ -1,0 +1,152 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+#map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+}
+
+.map-overlay {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.8);
+  margin-right: 20px;
+  font-family: Arial, sans-serif;
+  overflow: auto;
+}
+
+#title {
+  top: 15px;
+  left: 10px;
+  height: 160px;
+  padding: 8px;
+  width: 375px;
+}
+
+#title h4 {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+#info {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+#info a {
+  color: #61a5c2; /* Change hyperlink color */
+}
+
+
+#geocoder-container {
+  position: absolute;
+  top: 200px;
+  left: 10px;
+  z-index: 1;
+}
+
+#button-container {
+  position: absolute;
+  top: 200px;
+  left: 268px;
+  z-index: 1;
+  border-radius: 10px;
+  background-color: #fff;
+  box-sizing: border-box; /* Ensures padding and border are included in the container's total width and height */
+}
+
+#button-container button {
+  display: inline-block;
+  padding: 10px 15px;
+  color: #747474;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border: none;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  background-color: rgba(222, 225, 226, 0.7);
+}
+
+#button-container button.active {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+#button-container button:hover {
+  background-color: rgba(237, 240, 241, 0.7);
+}
+
+.legend {
+  background-color: #fff;
+  border-radius: 3px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  padding: 10px;
+  position: absolute;
+  bottom: 35px;
+  right: 20px;
+  z-index: 1; /* Ensure legend is on top of the map */
+  width: 75px; 
+}
+
+.legend-title {
+  font-weight: bold;
+  font-size: 13.5px;
+  margin-bottom: 10px;
+  text-align: left; /* Align title to the left */
+}
+
+.legend-content {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start; /* Align items to the start */
+}
+
+.legend-icons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 10px; /* Add space between icons and text */
+}
+
+.legend-icon {
+  width: 20px;
+  height: 20px;
+  margin-bottom: 10px; /* Add space between icons */
+  margin-top: 1px; /* Move icons 1px down */
+  border-radius: 50%;
+}
+
+.legend-icon[data-icon-size="small"] {
+  width: 7px; /* Adjust size for small icons */
+  height: 7px;
+}
+
+.legend-icon[data-icon-size="medium"] {
+  width: 10px; /* Adjust size for medium icons */
+  height: 10px;
+}
+
+.legend-icon[data-icon-size="large"] {
+  width: 13px; /* Adjust size for large icons */
+  height: 13px;
+}
+
+.legend-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.legend-item {
+  margin-bottom: 5px;
+  text-align: left; /* Align text to the left */
+}
